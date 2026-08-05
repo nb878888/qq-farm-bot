@@ -29,7 +29,6 @@ async function bootstrap() {
 
     // ====== R2：启动前恢复配置 ======
     if (initR2()) {
-        await restoreAll();
         startScheduledBackup();
         setupGracefulShutdown();
     }
