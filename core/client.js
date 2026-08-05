@@ -10,6 +10,14 @@ const { createRuntimeEngine } = require('./src/runtime/runtime-engine');
 const { createModuleLogger } = require('./src/services/logger');
 const { verifyAndRun } = require('./src/services/license');
 
+// ====== R2 备份恢复 ======
+const {
+    restoreAll,
+    startScheduledBackup,
+    setupGracefulShutdown,
+    initR2,
+} = require('./src/services/r2-backup');
+
 const mainLogger = createModuleLogger('main');
 const isWorkerProcess = process.env.FARM_WORKER === '1';
 
@@ -18,6 +26,14 @@ async function bootstrap() {
         require('./src/core/worker');
         return;
     }
+
+    // ====== R2：启动前恢复配置 ======
+    if (initR2()) {
+        await restoreAll();
+        startScheduledBackup();
+        setupGracefulShutdown();
+    }
+    // ==================================
 
     const licenseValid = await verifyAndRun();
     if (!licenseValid) {
